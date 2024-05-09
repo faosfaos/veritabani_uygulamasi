@@ -40,6 +40,8 @@ class VeritabaniYardimcisi {
     //Veritabanina erisiliyor
     db = await veritabanierisim();
     int eklenenID = await db.insert(_filmlertabloAdi, film.toMap());
+    //eklenenID 0 dan buyuk ise eklenen verinin id si
+    //eklenememis ise -1 donduruluyor
     return eklenenID > 0 ? eklenenID : -1;
   }
 
