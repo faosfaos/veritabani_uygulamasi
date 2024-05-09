@@ -48,7 +48,7 @@ class VeritabaniYardimcisi {
   Future<List<ModelFilmler>> readTumFilmler() async {
     //Veritabanina erisiliyor
     db = await veritabanierisim();
-    //Bos veritabani olusturuluyor
+    //Bos filmlerListesi listesi olusturuluyor
     List<ModelFilmler> filmlerListesi = [];
     //Veritabanindan veriler getiriliyor
     List<Map<String, dynamic>> map = await db.query(_filmlertabloAdi);
