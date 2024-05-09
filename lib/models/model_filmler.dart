@@ -1,4 +1,5 @@
 class ModelFilmler {
+  //Veritabanindaki filmler tablosunun alanlarinin aynisi olusturuyoruz
   int? id;
   String film_adi;
   String film_konusu;
@@ -6,6 +7,7 @@ class ModelFilmler {
   int film_yili;
   int film_imdb;
 
+  //constructor (Yapici metod) u tanimliyoruz
   ModelFilmler(
     this.film_adi,
     this.film_konusu,
@@ -13,7 +15,8 @@ class ModelFilmler {
     this.film_yili,
     this.film_imdb,
   );
-
+  //ModelFilmler i map a ceviriyoruz
+  //Veritabanina kayededilirken kullanilacak
   Map<String, dynamic> toMap() {
     return {
       "id": id,
@@ -25,6 +28,8 @@ class ModelFilmler {
     };
   }
 
+  //Parametre ile verilen map i ModelFilm e ceviriyoruz
+  //Veritabanindan alinan verilerin ModelFilmler e cevrilmesinde kullanilacak
   ModelFilmler.toFilm(Map<String, dynamic> map)
       : id = map["id"],
         film_adi = map["film_adi"],
