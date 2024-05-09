@@ -21,6 +21,7 @@ class VeritabaniYardimcisi {
     if (await databaseExists(dbPath)) {
       print("Veritabanı var");
     } else {
+      //Veritabani yoksa uygulamanin getDatabasesPath() yoluna kopyalaniyor
       ByteData data = await rootBundle.load("lib/veritabani/$_dbName");
       List<int> bytes =
           data.buffer.asInt8List(data.offsetInBytes, data.lengthInBytes);
@@ -30,33 +31,31 @@ class VeritabaniYardimcisi {
     return openDatabase(dbPath);
   }
 
+  //Tablo ile ilgili String degiskenler
   final String _filmlertabloAdi = "filmler";
 
-  Database? db;
+  late Database db;
 
   Future<int> createFilm(ModelFilmler film) async {
+    //Veritabanina erisiliyor
     db = await veritabanierisim();
-    if (db != null) {
-      int eklenenID = await db!.insert(_filmlertabloAdi, film.toMap());
-      return eklenenID;
-    } else {
-      return -1;
-    }
+    int eklenenID = await db.insert(_filmlertabloAdi, film.toMap());
+    return eklenenID > 0 ? eklenenID : -1;
   }
 
   Future<List<ModelFilmler>> readTumFilmler() async {
+    //Veritabanina erisiliyor
     db = await veritabanierisim();
+    //Bos veritabani olusturuluyor
     List<ModelFilmler> filmlerListesi = [];
-    if (db != null) {
-      List<Map<String, dynamic>> map = await db!.query(_filmlertabloAdi);
-
-      for (var i = 0; i < map.length; i++) {
-        ModelFilmler film = ModelFilmler.toFilm(map[i]);
-        filmlerListesi.add(film);
-      }
-      return filmlerListesi;
-    } else {
-      return [];
+    //Veritabanindan veriler getiriliyor
+    List<Map<String, dynamic>> map = await db.query(_filmlertabloAdi);
+    //map teki veriler ModelFilm e cevrilip filmlerListesi ne ekleniyor
+    for (var i = 0; i < map.length; i++) {
+      ModelFilmler film = ModelFilmler.toFilm(map[i]);
+      filmlerListesi.add(film);
     }
+    //filmlerListesi bos degil ise kendisi bos ise bos listes gonderiliyor
+    return filmlerListesi.isNotEmpty ? filmlerListesi : [];
   }
 }

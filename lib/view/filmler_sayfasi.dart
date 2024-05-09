@@ -15,6 +15,7 @@ class _FilmlerSayfasiState extends State<FilmlerSayfasi> {
   List<ModelFilmler> _tumFilmler = [];
 
   Future<void> filmleriDoldur() async {
+    //Veritabanindan tüm filmler getirliyor
     _tumFilmler = await db.readTumFilmler();
   }
 
@@ -33,6 +34,7 @@ class _FilmlerSayfasiState extends State<FilmlerSayfasi> {
     return FutureBuilder(
       future: filmleriDoldur(),
       builder: (context, snapshot) {
+        //_tumFilmler listesi bos degilse
         if (_tumFilmler.isNotEmpty) {
           return ListView.builder(
             itemCount: _tumFilmler.length,
@@ -51,6 +53,7 @@ class _FilmlerSayfasiState extends State<FilmlerSayfasi> {
           );
         } else {
           return const Center(
+            //_tumFilmler listesi bos ise
             child: CircularProgressIndicator(),
           );
         }
