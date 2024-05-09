@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:velocity_x/velocity_x.dart';
 import 'package:veritabani_uygulamasi/models/model_filmler.dart';
 import 'package:veritabani_uygulamasi/my_extensions.dart';
 import 'package:veritabani_uygulamasi/veritabani_yardimcisi.dart';
@@ -43,10 +44,57 @@ class _FilmlerSayfasiState extends State<FilmlerSayfasi> {
               return Card(
                 child: ListTile(
                   leading: CircleAvatar(
-                    child: Text(film.film_imdb.toString()),
+                    child: Text(film.id.toString()),
                   ),
                   title: Text(film.film_adi),
-                  subtitle: Text(film.film_konusu),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(film.film_konusu),
+                      Text("IMDB: ${film.film_imdb}"),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () async {
+                          List<String>? bilgiler = await _buildShowDialog(
+                              "Güncelle",
+                              gelenAd: _tumFilmler[index].film_adi,
+                              gelenKonu: _tumFilmler[index].film_konusu);
+                          if (bilgiler != null) {
+                            String ad = bilgiler[0];
+                            String konu = bilgiler[1];
+                            ModelFilmler film = _tumFilmler[index];
+                            film.film_adi = ad;
+                            film.film_konusu = konu;
+                            db.updateFilm(film);
+                            setState(() {});
+                          } else {
+                            print("Güncelleme yapılmadı");
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.edit_document,
+                          color: Colors.purple,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          _buildshowModalBottomSheet(
+                              _tumFilmler[index].film_adi,
+                              _tumFilmler[index].id!);
+                          /*  db.deleteFilm(_tumFilmler[index].id!);
+                          setState(() {}); */
+                        },
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.pink[400],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -65,7 +113,7 @@ class _FilmlerSayfasiState extends State<FilmlerSayfasi> {
     return FloatingActionButton(
       child: const Icon(Icons.add),
       onPressed: () async {
-        List<String>? bilgiler = await _buildShowDialog();
+        List<String>? bilgiler = await _buildShowDialog("Ekle");
         if (bilgiler != null) {
           String adi = bilgiler[0];
           String konu = bilgiler[1];
@@ -86,22 +134,27 @@ class _FilmlerSayfasiState extends State<FilmlerSayfasi> {
     );
   }
 
-  Future<List<String>?> _buildShowDialog() async {
-    String? adi, konusu;
+  Future<List<String>?> _buildShowDialog(
+    String title, {
+    String? gelenAd,
+    String? gelenKonu,
+  }) async {
     List<String>? bilgiler;
+
+    TextEditingController tfAd = TextEditingController(text: gelenAd);
+    TextEditingController tfKonu = TextEditingController(text: gelenKonu);
     return await showDialog<List<String>>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Merhaba"),
+          title: Text(title),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                onChanged: (value) {
-                  adi = value;
-                  print("adi $adi");
-                },
+                //FilmAdı
+                controller: tfAd,
+                autofocus: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Filmin Adı",
@@ -109,10 +162,8 @@ class _FilmlerSayfasiState extends State<FilmlerSayfasi> {
               ),
               const SizedBox(height: 4),
               TextField(
-                onChanged: (value) {
-                  konusu = value;
-                  print("konusu $konusu");
-                },
+                //FilmKonusu
+                controller: tfKonu,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Filmin Konusu",
@@ -121,17 +172,57 @@ class _FilmlerSayfasiState extends State<FilmlerSayfasi> {
             ],
           ),
           actions: [
-            "IPTAL".elevatedButton.onPressed(() {
+            "IPTAL".elevatedButton.backgroundColor(Colors.green).onPressed(() {
               Navigator.pop(context);
             }).make(context),
-            "EKLE".elevatedButton.onPressed(() {
-              if (adi != null && konusu != null) {
+            title.elevatedButton.backgroundColor(Colors.red).onPressed(() {
+              if (tfAd.text.isNotEmptyAndNotNull &&
+                  tfKonu.text.isNotEmptyAndNotNull) {
                 bilgiler = [];
-                bilgiler!.add(adi!);
-                bilgiler!.add(konusu!);
+                bilgiler!.add(tfAd.text);
+                bilgiler!.add(tfKonu.text);
               }
               Navigator.pop(context, bilgiler);
             }).make(context),
+          ],
+        );
+      },
+    );
+  }
+
+  void _buildshowModalBottomSheet(String filmIsim, int id) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            /* filmIsim.text.xl3.bold.white
+                .makeCentered()
+                .box
+                .color(Colors.purple)
+                .width(context.screenWidth)
+                .make(), */
+            [
+              ('"$filmIsim" silinecek,\nOnaylıyor musunuz?')
+                  .text
+                  .bold
+                  .xl2
+                  .make(),
+              "SİL"
+                  .elevatedButton
+                  .border(
+                    strokeAlign: 3,
+                    color: Colors.red[300]!,
+                    width: 2,
+                  )
+                  .backgroundColor(Colors.red)
+                  .onPressed(() async {
+                db.deleteFilm(id);
+                Navigator.pop(context);
+                setState(() {});
+              }).make(context),
+            ].hStack(alignment: MainAxisAlignment.spaceAround).p(20)
           ],
         );
       },

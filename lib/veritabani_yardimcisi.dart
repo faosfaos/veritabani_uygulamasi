@@ -33,9 +33,16 @@ class VeritabaniYardimcisi {
 
   //Tablo ile ilgili String degiskenler
   final String _filmlertabloAdi = "filmler";
+  final String _idFilm = "id";
+  final String _adFilm = "film_adi";
+  final String _konuFilm = "film_konusu";
+  final String _kategoriFilm = "film_kategori";
+  final String _yilFilm = "film_yili";
+  final String _imdbFilm = "film_imdb";
 
   late Database db;
-
+  //CRUD OPERASYONLAR
+  //1-Create
   Future<int> createFilm(ModelFilmler film) async {
     //Veritabanina erisiliyor
     db = await veritabanierisim();
@@ -45,6 +52,7 @@ class VeritabaniYardimcisi {
     return eklenenID > 0 ? eklenenID : -1;
   }
 
+  //2-Read
   Future<List<ModelFilmler>> readTumFilmler() async {
     //Veritabanina erisiliyor
     db = await veritabanierisim();
@@ -59,5 +67,32 @@ class VeritabaniYardimcisi {
     }
     //filmlerListesi bos degil ise kendisi bos ise bos listes gonderiliyor
     return filmlerListesi.isNotEmpty ? filmlerListesi : [];
+  }
+
+  //3- Update
+  Future<int> updateFilm(ModelFilmler film) async {
+    //Veritabanina erisiliyor
+    db = await veritabanierisim();
+    int count = await db.update(
+      _filmlertabloAdi,
+      film.toMap(),
+      where: "$_idFilm=?",
+      whereArgs: [film.id],
+    );
+    //count 0 dan büyük ise en az bir veri güncellenmiştir
+    // degilse bir hata olusmustur. Hata  olusmus ise 0 geri donduruyoruz
+    return count > 0 ? count : 0;
+  }
+
+  //4- Delete
+
+  void deleteFilm(int id) async {
+    //Veritabanina erisiliyor
+    db = await veritabanierisim();
+    db.delete(
+      _filmlertabloAdi,
+      where: "$_idFilm=?",
+      whereArgs: [id],
+    );
   }
 }
